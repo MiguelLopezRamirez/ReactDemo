@@ -1,45 +1,44 @@
-// src/ecommerce/prices/pages/PricesProvider.jsx
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { getAllPrices } from '../services/remote/GetAllPrices';
-import { getPrice } from "../services/remote/get/getPrice";
+import { getAllRoles } from '../services/remote/GetAllRoles';
+import { getRole } from "../services/remote/get/getRole";
 import { TOAST_EXITO } from "../components/elements/messages/myToastAlerts";
 
 const RolesContext = createContext();
 
 export const RolesProvider = ({ children }) => {
-    const [prices, setPrices] = useState([]); // Estado de lista de precios
+    const [roles, setRoles] = useState([]); // Estado de lista de precios
     const [loadingTable, setLoadingTable] = useState(false); // Estado de carga
        //Precio Seleccionado
-       const [priceSel, setPriceSel] = useState(null);
+       const [roleSel, setRoleSel] = useState(null);
        //Presentación Seleccionada
        const [presentationSel, setPresentationSel] = useState(null);
        //Id de fila seleccionada por precio
-       const [idSelectedRowPrices, setIdSelectedRowPrices] = useState(null);
+       const [idSelectedRowRoles, setIdSelectedRowRoles] = useState(null);
        //Id de fila seleccionada por precio
      const [idSelectedRowPresentation, setIdSelectedRowPresentation] = useState(null);
      //mensaje
      const showToastExito = (mensaje) => TOAST_EXITO(mensaje);
     // Función para cargar los precios
-    const fetchDataPrices = async () => {
+    const fetchDataRoles = async () => {
         setLoadingTable(true);
         try {
-            const allPrices = await getAllPrices();
-            setPrices(allPrices);
+            const allRoles = await getAllRoles();
+            setRoles(allRoles);
         } catch (error) {
-            console.error("Error al obtener los precios:", error);
+            console.error("Error al obtener los roles:", error);
         } finally {
             setLoadingTable(false);
         }
     };
 
-    const fetchDataPriceSelect = async (id) => {
+    const fetchDataRoleSelect = async (id) => {
         setLoadingTable(true);
         try {
-          let priceSel = await getPrice(id);
-          setPriceSel(priceSel);
+          let roleSel = await getRole(id);
+          setRoleSel(roleSel);
         } catch (error) {
           console.error(
-            `Error al obtener la presentacion del producto ${id}`,
+            `Error al obtener la presentacion del rol ${id}`,
             error
           );
         }
@@ -47,19 +46,19 @@ export const RolesProvider = ({ children }) => {
       };
 
     useEffect(() => {
-        fetchDataPrices(); // Carga inicial de precios
+        fetchDataRoles(); // Carga inicial de precios
     }, []);
     const contextValue = {
-        prices,
-        priceSel,
+        roles,
+        roleSel,
         loadingTable,
-        idSelectedRowPrices,
+        idSelectedRowRoles,
         idSelectedRowPresentation,
         presentationSel,
-        setPriceSel,
-        fetchDataPrices,
-        fetchDataPriceSelect,
-        setIdSelectedRowPrices,
+        setRoleSel,
+        fetchDataRoles,
+        fetchDataRoleSelect,
+        setIdSelectedRowRoles,
         setIdSelectedRowPresentation,
         setPresentationSel,
         // fetchPresentationSelect,

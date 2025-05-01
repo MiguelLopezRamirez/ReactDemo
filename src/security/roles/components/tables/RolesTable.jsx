@@ -7,65 +7,60 @@ import EditIcon from "@mui/icons-material/Edit";
 import InfoIcon from "@mui/icons-material/Info";
 import DeleteIcon from "@mui/icons-material/Delete";
 import RefreshIcon from "@mui/icons-material/Refresh";
-import AddPriceModal from '../modals/AddPriceModal';
+import AddRoleModel from '../modals/AddRoleModal';
 import { useRolesContext } from "../../pages/RolesProvider";
 import UpdatePriceModal from "../modals/UpdatePriceModal"
 import { showMensajeError, showMensajeConfirm } from "../elements/messages/mySwalAlers";
-import { delPrice } from "../../services/remote/del/delPrice";
+import { delRole } from "../../services/remote/del/delRole";
 // Definir columnas de la tabla de precios
-const PricesColumns = [
-  { accessorKey: 'IdPresentaOK', header: 'ID Producto', size: 30 },
-  { accessorKey: 'Precio', header: 'Precio', size: 100 },
-  { accessorKey: 'CostoIni', header: 'Costo Inicial', size: 100 },
-  { accessorKey: 'CostoFin', header: 'Costo Final', size: 100 },
-  { accessorKey: 'IdTipoFormulaOK', header: 'Tipo de Fórmula', size: 150 },
+const RolesColumns = [
+  { accessorKey: 'ROLEID', header: 'ID Rol', size: 30 },
+  { accessorKey: 'ROLENAME', header: 'Rol', size: 100 },
+  { accessorKey: 'DESCRIPTION', header: 'Descripción', size: 100 }
 ];
 
-const PricesTable = () => {
+const RolesTable = () => {
     const {
-        prices,
-        priceSel,
+        roles,
+        roleSel,
         loadingTable,
-        idSelectedRowPrices,
+        idSelectedRowRoles,
         idSelectedRowPresentation,
         presentationSel,
-        setPriceSel,
-        fetchDataPrices,
-        fetchDataPriceSelect,
-        setIdSelectedRowPrices,
+        setRoleSel,
+        fetchDataRoles,
+        fetchDataRoleSelect,
+        setIdSelectedRowRoles,
         setIdSelectedRowPresentation,
         setPresentationSel,
         showToastExito,
     } = useRolesContext();
 
-    const [showAddPriceModal, setShowAddPriceModal] = useState(false); // Estado para el modal
+    const [showAddRoleModel, setShowAddRoleModel] = useState(false); // Estado para el modal
     const [showUpdatePriceModal, setShowUpdatePriceModal] = useState(false); // Estado para el modal
-
-   
-    //Eliminar
     
     // Método handleReload para recargar manualmente los datos de la tabla
     const handleReload = async () => {
-        await fetchDataPrices();
+        await fetchDataRoles();
     };
 
     const handleDelete = async () => {
         const res = await showMensajeConfirm(
-          `El producto con el ID ${priceSel.IdPresentaOK} será eliminado, ¿Desea continuar?`
+          `El rol con el ID ${roleSel.IdPresentaOK} será eliminado, ¿Desea continuar?`
         );
         if (res) {
           try {
-            await delPrice(priceSel.IdPresentaOK);
-            setPriceSel(null);
-            fetchDataPrices();
-            showToastExito("Se eliminó el Producto");
+            await delRole(roleSel.ROLEID);
+            setRoleSel(null);
+            fetchDataRoles();
+            showToastExito("Se eliminó el Rol");
             handleReload();
           } catch (e) {
             
           }
         }else{
             showMensajeError(
-                `No se pudo Eliminar el Pruducto ${priceSel.IdPresentaOK} `
+                `No se pudo Eliminar el Rol ${roleSel.ROLEID} `
               );    
         }
         handleReload();
@@ -74,22 +69,21 @@ const PricesTable = () => {
     return (
         <Box>
             <MaterialReactTable
-                columns={PricesColumns}
-                data={prices} // Datos de precios obtenidos de la API
+                columns={RolesColumns}
+                data={roles} // Datos de precios obtenidos de la API
                 state={{ isLoading: loadingTable }}
                 initialState={{ density: "compact", showGlobalFilter: true }}
                 muiTableBodyRowProps={({ row }) => ({
                     onClick: () => {
                         console.log("ROW", row.original, "ID", row.id);
-                        setPriceSel(row.original);
-                        setIdSelectedRowPrices(row.id);
-                        
+                        setRoleSel(row.original);
+                        setIdSelectedRowRoles(row.id);
                       },
                       sx: {
                         //FIC: si esta cargando no debes dar click aun
                         cursor: loadingTable ? "not-allowed" : "pointer", 
                         backgroundColor:
-                          idSelectedRowPrices === row.id
+                          idSelectedRowRoles === row.id
                             ? darken("#EFF999", 0.01)
                             : "inherit",
                       },
@@ -97,7 +91,7 @@ const PricesTable = () => {
                 renderTopToolbarCustomActions={() => (
                     <Stack direction="row" sx={{ m: 1 }}>
                         <Tooltip title="Agregar">
-                            <IconButton onClick={() => setShowAddPriceModal(true)}>
+                            <IconButton onClick={() => setShowAddRoleModel(true)}>
                                 <AddCircleIcon />
                             </IconButton>
                         </Tooltip>
@@ -120,19 +114,19 @@ const PricesTable = () => {
                 )}
             />
             {/* Modal para agregar nuevo precio */}
-            <AddPriceModal 
-                showModal={showAddPriceModal} 
+            <AddRoleModel 
+                showModal={showAddRoleModel} 
                 setShowModal={(open) => {
-                    setShowAddPriceModal(open);
-                    if (!open) fetchDataPrices(); // Recargar precios si se cierra el modal
+                    setShowAddRoleModel(open);
+                    if (!open) fetchDataRoles(); // Recargar precios si se cierra el modal
                 }}
             />
             <UpdatePriceModal 
                 showModal={showUpdatePriceModal}
-                data = {priceSel}
+                data = {roleSel}
                 setShowModal={(open) => {
                     setShowUpdatePriceModal(open);
-                    if (!open) fetchDataPrices(); // Recargar precios si se cierra el modal
+                    if (!open) fetchDataRoles(); // Recargar precios si se cierra el modal
                 }
                 }
                 
@@ -141,4 +135,4 @@ const PricesTable = () => {
     );
 };
 
-export default PricesTable;
+export default RolesTable;

@@ -1,7 +1,7 @@
 import { createBrowserRouter } from "react-router-dom";
 import Home from "../security/home/pages/Home.jsx";
 import Users from "../security/users/pages/Users.jsx";
-import Roles from "../security/prices/pages/Roles.jsx";
+import Roles from "../security/roles/pages/Roles.jsx";
 import Apps from "../security/apps/pages/Apps.jsx";
 import Views from "../security/views/pages/Views.jsx";
 import Process from "../security/process/pages/Process.jsx";

@@ -1,35 +1,36 @@
-// src/ecommerce/prices/components/modals/AddPriceModal.jsx
-import React, {useState} from "react";
+// src/ecommerce/prices/components/modals/UpdatePriceModal.jsx
+import React, {useState, useEffect} from "react";
 import { Dialog, DialogContent, DialogTitle, Typography, TextField, DialogActions } from "@mui/material";
 import { LoadingButton } from "@mui/lab";
 import CloseIcon from "@mui/icons-material/Close";
 import SaveIcon from "@mui/icons-material/Save";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { addPrice } from '../../services/remote/post/AddPrice';
+import { putPrice } from '../../services/remote/put/putPrice';
 import MyAddLabels from "../elements/MyAddLabels"; 
+import axios from 'axios';
 
-const AddPriceModal = ({ showModal, setShowModal }) => {
-    const [Loading, setLoading] = useState(false);
+
+const UpdatePriceModal = ({ showModal, setShowModal, data }) => {
+    const [loading, setLoading] = useState(false);
 
     const formik = useFormik({
+        enableReinitialize: true,  // Permite que los valores iniciales cambien cuando se recibe nueva data
         initialValues: {
-            IdProdServOK: "",
-            IdPresentaOK: "",
-            IdTipoFormulaOK: "",
-            Formula: "", 
-            CostoIni: "",
-            CostoFin: "",
-            Precio: "",
-            detail_row: {
+            IdProdServOK: data?.IdProdServOK || "",
+            IdPresentaOK: data?.IdPresentaOK || "",
+            IdTipoFormulaOK: data?.IdTipoFormulaOK || "",
+            Formula: data?.Formula || "",
+            CostoIni: data?.CostoIni || "",
+            CostoFin: data?.CostoFin || "",
+            Precio: data?.Precio || "",
+            detail_row: data?.detail_row || {
                 Activo: "S",
                 Borrado: "N",
-                detail_row_reg: [
-                {
-                    FechaReg: "2024-10-05T00:00:00.628Z",
-                    UsuarioReg: "Carlos"
-                }
-                ]
+                detail_row_reg: [{
+                    FechaReg: new Date().toISOString(),
+                    UsuarioReg: "defaultUser"
+                }]
             }
         },
         validationSchema: Yup.object({
@@ -43,24 +44,32 @@ const AddPriceModal = ({ showModal, setShowModal }) => {
         }),
         onSubmit: async (values) => {
             setLoading(true);
-            console.log("Valores enviados:", values);
+            console.log("Datos actualizados:", values);
+            
             try {
-                await addPrice(values); // Llama a la API para agregar el precio
-                setShowModal(false); 
-                console.log("Precio agregado con éxito:", values);
+                // Aquí se llamará a la API PUT
+                await putPrice(values.IdPresentaOK,values); // Llama a la API para agregar el precio
+                console.log("Precio actulizado con éxito:", values);
+
+                setShowModal(false); // Cierra el modal al completar la solicitud
+                
             } catch (error) {
-                console.error("Error al agregar el precio:", error);
+                console.error("Error al actualizar:", error);
             }
             setLoading(false);
         },
-    });    
+    });
+
+    useEffect(() => {
+        console.log('Datos recibidos para edición:', data);
+    }, [data]);
 
     return (
         <Dialog open={showModal} onClose={() => setShowModal(false)} fullWidth>
             <form onSubmit={formik.handleSubmit}>
                 <DialogTitle>
                     <Typography > {/* Cambiado de h6 a h5 */}
-                        <strong>Agregar Nuevo Precio</strong>
+                        <strong>Actualizar Precio</strong>
                     </Typography>
                 </DialogTitle>
 
@@ -70,6 +79,7 @@ const AddPriceModal = ({ showModal, setShowModal }) => {
                         label="ID Producto*"
                         required
                         value={formik.values.IdProdServOK}
+                        disabled={true}
                         onChange={formik.handleChange}
                         onBlur={formik.handleBlur}
                         error={formik.touched.IdProdServOK && Boolean(formik.errors.IdProdServOK)}
@@ -80,6 +90,7 @@ const AddPriceModal = ({ showModal, setShowModal }) => {
                         label="ID Presentación*"
                         required
                         value={formik.values.IdPresentaOK}
+                        disabled={true}
                         onChange={formik.handleChange}
                         onBlur={formik.handleBlur}
                         error={formik.touched.IdPresentaOK && Boolean(formik.errors.IdPresentaOK)}
@@ -141,7 +152,7 @@ const AddPriceModal = ({ showModal, setShowModal }) => {
                     <MyAddLabels
                     label="Agrega Índices de Búsqueda"
                     onChangeLabels={(labels) => (formik.values.Indice = labels.join("-"))}
-                    disabled={Loading}
+                    disabled={loading}
                 />
                 </DialogContent>
                 <DialogActions>
@@ -160,7 +171,7 @@ const AddPriceModal = ({ showModal, setShowModal }) => {
                         startIcon={<SaveIcon />}
                         variant="contained"
                         type="submit" // Cambiar a tipo submit
-                        loading={Loading}
+                        loading={loading}
                     >
                         GUARDAR
                     </LoadingButton>
@@ -170,4 +181,4 @@ const AddPriceModal = ({ showModal, setShowModal }) => {
     );
 };
 
-export default AddPriceModal;
+export default UpdatePriceModal;

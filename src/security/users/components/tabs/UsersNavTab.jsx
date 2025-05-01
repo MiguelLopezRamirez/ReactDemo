@@ -19,7 +19,7 @@ const UserNavTab = ({ setCurrentCategory }) => {
                 value={currentTabIndex}
                 variant={"fullWidth"}
                 onChange={handleChange}
-                aria-label="Product tabs"
+                aria-label="User tabs"
                 textColor="primary"
             >
                 {UserTabs.map((tab) => (
