@@ -1,5 +1,5 @@
 import { RouterProvider } from "react-router-dom";
-import  EcommerceRouter from "./navigation/NaviRoutesCommerce";
+import  SecurityRouter from "./navigation/NaviRoutesSecurity";
 import Footer from "./share/footer/components/Footer";
 import { GET_DATA_START } from "./security/redux/thunks";
 import { useDispatch } from "react-redux";
@@ -22,7 +22,7 @@ export default function AppAllModules() {
             <div id='div-app'>
                 {/*<h1>Main App - All Modules</h1>*/}
                 <ToastContainer />
-                <RouterProvider router={EcommerceRouter} />
+                <RouterProvider router={SecurityRouter} />
                 <div id='div-footer'>
                     <Footer />
                 </div>
