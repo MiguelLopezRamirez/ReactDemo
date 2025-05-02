@@ -1,6 +1,6 @@
 // src/ecommerce/prices/components/modals/AddPriceModal.jsx
-import React, {useState} from "react";
-import { Dialog, DialogContent, DialogTitle, Typography, TextField, DialogActions, Button, IconButton, 
+import React, {useState, useEffect} from "react";
+import {Box, Dialog, DialogContent, DialogTitle, Typography, TextField, DialogActions, Button, IconButton, 
     FormControl, InputLabel, Select, MenuItem, Checkbox, ListItemText, FormHelperText } from "@mui/material";
 import { LoadingButton } from "@mui/lab";
 import CloseIcon from "@mui/icons-material/Close";
@@ -9,11 +9,36 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { useFormik, FieldArray } from "formik";
 import * as Yup from "yup";
 import { addRole } from '../../services/remote/post/AddRole';
+import { getValuesPrivilegios, getValuesProcesos } from '../../services/remote/get/Getvalues';
+
+
+
 import MyAddLabels from "../elements/MyAddLabels"; 
 
 const AddRoleModal = ({ showModal, setShowModal }) => {
+    const [procesos, setProcesos] = useState([]);
+    const [privilegiosDisponibles, setPrivilegiosDisponibles] = useState([]);
+    
     const [Loading, setLoading] = useState(false);
-
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const procesosData = await getValuesProcesos();
+                const privilegiosData = await getValuesPrivilegios();
+    
+                console.log("Procesos recibidos:", procesosData);
+                console.log("Privilegios recibidos:", privilegiosData);
+    
+                setProcesos(procesosData);
+                setPrivilegiosDisponibles(privilegiosData);
+            } catch (error) {
+                console.error("Error al cargar procesos o privilegios", error);
+            }
+        };
+        fetchData();
+    }, []);
+    
+    
     const formik = useFormik({
         initialValues: {
             ROLEID: "",
@@ -22,7 +47,7 @@ const AddRoleModal = ({ showModal, setShowModal }) => {
             PRIVILEGES: [
                 {
                     PROCESSID: "",
-                    PRIVILEGEID: [""]
+                    PRIVILEGEID: []
                 }
             ],
             DETAIL_ROW: {
@@ -51,11 +76,25 @@ const AddRoleModal = ({ showModal, setShowModal }) => {
         }),
         onSubmit: async (values) => {
             setLoading(true);
+        
+            // Procesar los PRIVILEGES para añadir el prefijo al PROCESSID si no lo tiene
+            const processedPrivileges = values.PRIVILEGES.map(priv => ({
+                ...priv,
+                PROCESSID: priv.PROCESSID.startsWith("IdProcesses-")
+                    ? priv.PROCESSID
+                    : `IdProcesses-${priv.PROCESSID}`
+            }));
+        
             const requestBody = {
                 type: "role",
-                role: { ...values }
+                role: {
+                    ...values,
+                    PRIVILEGES: processedPrivileges // usar los procesados
+                }
             };
+        
             console.log("Valores enviados:", requestBody);
+        
             try {
                 await addRole(requestBody); 
                 setShowModal(false); 
@@ -63,6 +102,7 @@ const AddRoleModal = ({ showModal, setShowModal }) => {
             } catch (error) {
                 console.error("Error al agregar el rol:", error);
             }
+        
             setLoading(false);
         },
     });    
@@ -102,6 +142,7 @@ const AddRoleModal = ({ showModal, setShowModal }) => {
     }}
 />
 
+
 <TextField
     id="DESCRIPTION"
     label="Descripción*"
@@ -118,6 +159,86 @@ const AddRoleModal = ({ showModal, setShowModal }) => {
     }}
 />
 
+{/* // Por cada grupo de privilegios (proceso + privilegios) */}
+{formik.values.PRIVILEGES.map((priv, index) => (
+  <Box key={index} sx={{ mb: 3, border: "1px solid #ccc", p: 2, borderRadius: 2 }}>
+    <Typography variant="subtitle1">Permiso #{index + 1}</Typography>
+
+    {/* Select de proceso */}
+    <FormControl fullWidth sx={{ mt: 2 }}>
+      <InputLabel id={`process-select-label-${index}`}>Proceso*</InputLabel>
+      <Select
+        labelId={`process-select-label-${index}`}
+        value={priv.PROCESSID}
+        onChange={(e) =>
+          formik.setFieldValue(`PRIVILEGES[${index}].PROCESSID`, e.target.value)
+        }
+        required
+      >
+        {procesos.map((proc) => (
+          <MenuItem key={proc.VALUEID} value={proc.VALUEID}>
+            {proc.VALUE}
+          </MenuItem>
+        ))}
+      </Select>
+    </FormControl>
+    
+
+    {/* Select múltiple de privilegios */}
+    
+    <FormControl fullWidth sx={{ mt: 2 }}>
+      <InputLabel id={`privilege-select-label-${index}`}>Privilegios*</InputLabel>
+      <Select
+        labelId={`privilege-select-label-${index}`}
+        multiple
+        value={Array.isArray(priv.PRIVILEGEID) ? priv.PRIVILEGEID : []} // Asegura que sea un array
+        onChange={(e) =>
+            formik.setFieldValue(`PRIVILEGES[${index}].PRIVILEGEID`, e.target.value)
+        }
+        renderValue={(selected) =>
+            Array.isArray(selected) ? selected.join(", ") : ""
+          }
+        >
+        {privilegiosDisponibles.map((privilegio) => (
+        <MenuItem key={privilegio.VALUEID} value={privilegio.VALUEID}>
+            <Checkbox
+            checked={priv.PRIVILEGEID.includes(privilegio.VALUEID)} // ❌ Esto puede fallar si PRIVILEGEID no es array aún
+            />
+            <ListItemText primary={privilegio.VALUE} />
+        </MenuItem>
+        ))}
+
+        </Select>
+    </FormControl>
+
+    {/* Botón para eliminar este grupo */}
+    <Box display="flex" justifyContent="flex-end" mt={2}>
+      <IconButton
+        color="error"
+        onClick={() => {
+          const updated = [...formik.values.PRIVILEGES];
+          updated.splice(index, 1);
+          formik.setFieldValue("PRIVILEGES", updated);
+        }}
+      >
+        <DeleteIcon />
+      </IconButton>
+    </Box>
+  </Box>
+))}
+
+{/* Botón para agregar otro grupo */}
+<Button
+  variant="outlined"
+  onClick={() =>
+    formik.setFieldValue("PRIVILEGES", [
+      ...formik.values.PRIVILEGES,
+      { PROCESSID: "", PRIVILEGEID: [] }
+    ])
+  }
+>
+  Agregar Proceso y Privilegios
+</Button>
 {/* Campo para PRIVILEGES - Requiere un componente más complejo 
 <FieldArray
     name="PRIVILEGES"

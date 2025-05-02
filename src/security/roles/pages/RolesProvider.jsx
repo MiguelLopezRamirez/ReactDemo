@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { getAllRoles } from '../services/remote/GetAllRoles';
 import { getRole } from "../services/remote/get/getRole";
 import { TOAST_EXITO } from "../components/elements/messages/myToastAlerts";
+import { getValuesPrivilegios, getValuesProcesos } from '../services/remote/get/Getvalues';
 
 const RolesContext = createContext();
 
@@ -30,7 +31,27 @@ export const RolesProvider = ({ children }) => {
             setLoadingTable(false);
         }
     };
-
+    const [procesos, setProcesos] = useState([]);
+    const [privilegiosDisponibles, setPrivilegiosDisponibles] = useState([]);
+      
+    
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const procesosData = await getValuesProcesos();
+                const privilegiosData = await getValuesPrivilegios();
+    
+                console.log("Procesos recibidos:", procesosData);
+                console.log("Privilegios recibidos:", privilegiosData);
+    
+                setProcesos(procesosData);
+                setPrivilegiosDisponibles(privilegiosData);
+            } catch (error) {
+                console.error("Error al cargar procesos o privilegios", error);
+            }
+        };
+        fetchData();
+    }, []);
     const fetchDataRoleSelect = async (id) => {
         setLoadingTable(true);
         try {
@@ -63,6 +84,9 @@ export const RolesProvider = ({ children }) => {
         setPresentationSel,
         // fetchPresentationSelect,
         showToastExito,
+        procesos,
+        privilegiosDisponibles,
+
       };
     // Valores compartidos en el contexto
     return (
