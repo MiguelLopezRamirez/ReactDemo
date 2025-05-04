@@ -32,13 +32,7 @@ const UpdateRoleModal = ({ showModal, setShowModal, data }) => {
     };
     fetchData();
   }, []);
-  const processedPrivileges = data.PRIVILEGES.map(({ _id, ...priv }) => ({
-    ...priv,
-    PROCESSID: priv.PROCESSID.startsWith("IdProcesses-")
-      ? priv.PROCESSID
-      : `IdProcesses-${priv.PROCESSID}`
-  }));
-  
+
   const processedInitialValues = data
   ? {
       ...data,
